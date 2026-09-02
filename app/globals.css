@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  /* One family across the whole page, as on the reference site. */
+  --font-display: var(--font-mona), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-mona), system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -13,13 +14,13 @@
 }
 
 html {
-  background: #131313;
+  background: #282C20;
 }
 
 body {
   margin: 0;
-  background: #131313;
-  color: #F2F0EA;
+  background: #282C20;
+  color: #F4F4ED;
   font-family: var(--font-sans);
   overflow-x: hidden;
 }
@@ -37,8 +38,8 @@ html.lenis body {
 }
 
 ::selection {
-  background: #DCF264;
-  color: #131313;
+  background: #D2FF00;
+  color: #282C20;
 }
 
 /* ---------------------------------------------------------------- folders --

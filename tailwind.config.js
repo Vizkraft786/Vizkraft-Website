@@ -26,18 +26,39 @@ module.exports = {
        * into the same neutral family so the Projects rail stops reading warm
        * against a cold palette.
        */
+      /**
+       * Palette read directly off landonorris.com's computed styles, not
+       * eyeballed. The defining move is the ground: #282C20 is a dark OLIVE,
+       * not a neutral black — that green cast under everything is what stops
+       * the lime reading as a generic neon-on-black accent.
+       */
       colors: {
-        bone: "#F2F0EA",
-        clay: "#D9D7D0",
-        ink: "#131313",
-        stone: "#7A7A75",
-        acid: "#DCF264",
-        // Kept as aliases so existing markup that references them still
-        // resolves; both now sit in the neutral family.
-        ember: "#DCF264",
-        manila: "#D9D7D0",
-        manilaDeep: "#B8B6AE",
-        sheet: "#F2F0EA",
+        bone: "#F4F4ED", // primary text
+        clay: "#DDE1D2", // secondary light
+        ink: "#282C20", // page ground — dark olive
+        char: "#111112", // true near-black, for depth
+        surface: "#3B3C38", // raised panels
+        surfaceDeep: "#343A26", // olive-tinted panels
+        stone: "#B4B8A5", // muted sage text
+        stoneDim: "#535450", // dimmest text
+        acid: "#D2FF00", // signature lime
+        acidDeep: "#B2C73A", // olive-lime, secondary
+        // Aliases so existing markup keeps resolving.
+        ember: "#D2FF00",
+        manila: "#DDE1D2",
+        manilaDeep: "#B4B8A5",
+        sheet: "#F4F4ED",
+
+        /**
+         * v2 palette — the light/lavender direction, kept in its own namespace
+         * so /v2 can be explored without disturbing a single v1 token.
+         */
+        paper: "#E9E9E9",
+        card: "#FFFFFF",
+        graphite: "#1A1A1A",
+        mist: "#8C8C8C",
+        lilac: "#A99BE8",
+        lilacSoft: "#EDE9FB",
       },
       fontFamily: {
         display: ["var(--font-display)", "Helvetica Neue", "Arial", "sans-serif"],

@@ -99,7 +99,7 @@ export default function CinematicScroll() {
       const w = img.naturalWidth * scale;
       const h = img.naturalHeight * scale;
 
-      ctx.fillStyle = "#131313";
+      ctx.fillStyle = "#282C20";
       ctx.fillRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     };
@@ -397,16 +397,19 @@ export default function CinematicScroll() {
             {site.beats.hero.eyebrow}
           </p>
           {/*
-            Sized against the tracking, not independently of it: at 0.28em
-            letter-spacing an 8-character word runs ~6.6x the font size, so
-            anything past ~11vw pushes the wordmark wider than the viewport
-            and drags the whole centred stack off-axis with it.
-            The trailing -mr offsets the space after the final letter so the
-            word sits optically centred rather than pulled left.
+            Heavy weight and NEGATIVE tracking, matching the reference's
+            display treatment (700, uppercase, ~-0.023em) rather than the wide
+            luxury letterspacing this previously used. Tight-set bold is the
+            whole character of that type system; Mona Sans at +0.28em would
+            read as a different brand entirely.
+
+            Negative tracking narrows the word, which buys room to set it
+            larger: at ~0.69x font size per character it runs ~5.5x the font
+            size, so 13vw lands near 71vw wide with margin to spare.
           */}
           <h1
             data-anim="display"
-            className="-mr-[0.28em] max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-light leading-[0.95] tracking-[0.28em] text-bone"
+            className="max-w-full font-display text-[clamp(3rem,13vw,11rem)] font-extrabold uppercase leading-[0.86] tracking-[-0.03em] text-bone"
           >
             {site.beats.hero.title}
           </h1>

@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
-import { Archivo, Inter } from "next/font/google";
+import { Mona_Sans } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site-config";
 
 /**
- * Archivo for display, Inter for text — both neo-grotesques, matching the
- * reference sites, which use no serif anywhere. Archivo carries the wider,
- * squarer character of the reference headline; Inter matches the neutral
- * Swiss grotesque used for body copy.
+ * Mona Sans, the same family landonorris.com runs on — a variable grotesque
+ * loaded there across the full 200-900 range and carrying ~95% of its text.
+ *
+ * That site pairs it with Brier for display, which is a commercial licence we
+ * don't hold. Rather than substitute a lookalike, the display role is served by
+ * Mona Sans at its heavy end with tight negative tracking, which is what a
+ * variable font is for and keeps the page on one family.
  */
-const display = Archivo({
+const mona = Mona_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const sans = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-mona",
   display: "swap",
 });
 
@@ -34,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en" className={mona.variable}>
       <body>{children}</body>
     </html>
   );
