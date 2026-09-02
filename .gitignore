@@ -1,0 +1,35 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env — never commit credentials
+.env
+.env*.local
+.env.production
+
+# editor
+.vscode/
+.idea/
+
+# typescript
+*.tsbuildinfo
+
+# scratch / review artifacts
+/public/__review.*
