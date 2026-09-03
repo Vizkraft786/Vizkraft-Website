@@ -219,41 +219,6 @@ html.lenis body {
   }
 }
 
-/* ---------------------------------------------------------------- marquee --
-   Two identical rows translated by exactly half the track width, so copy two
-   arrives where copy one started and the loop is seamless. Linear, because
-   constant motion that eases reads as a stutter.
-   -------------------------------------------------------------------------- */
-@keyframes marquee-slide {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-.marquee__track {
-  animation: marquee-slide 38s linear infinite;
-  will-change: transform;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .marquee:hover .marquee__track {
-    animation-play-state: paused;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee__track {
-    animation: none;
-  }
-  /* Without the scroll there is no reason to hold the duplicate row. */
-  .marquee__track > ul[aria-hidden="true"] {
-    display: none;
-  }
-}
-
 /* ------------------------------------------------------------- liquid glass --
    A CSS translation of Apple's Liquid Glass material, not a copy of the API
    (there is no SwiftUI on a Next.js page). What's translated is the material
