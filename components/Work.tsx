@@ -98,18 +98,18 @@ export default function Work() {
   const active = open === null ? null : site.projects[open];
 
   return (
-    <section ref={ref} id="work" className="grain-dark bg-ink px-6 py-28 md:px-10 md:py-40">
+    <section ref={ref} id="work" className="bg-white3 px-6 py-28 md:px-10 md:py-40">
       <div className="mx-auto max-w-[1600px]">
-        <div className="mb-14 flex items-end justify-between gap-6 border-b border-bone/10 pb-8">
+        <div className="mb-14 flex items-end justify-between gap-6 border-b border-ink/10 pb-8">
           <div>
-            <p className="mb-4 text-[10px] uppercase tracking-wide2 text-stone">
+            <p className="mb-4 text-[10px] uppercase tracking-wide2 text-ink/50">
               Archive
             </p>
-            <h2 className="font-display text-5xl font-light leading-none text-bone md:text-7xl">
+            <h2 className="font-display text-5xl font-light leading-none text-ink md:text-7xl">
               Selected Work
             </h2>
           </div>
-          <span className="hidden shrink-0 text-[10px] uppercase tracking-wide2 text-stone md:block">
+          <span className="hidden shrink-0 text-[10px] uppercase tracking-wide2 text-ink/50 md:block">
             Open a drawer
           </span>
         </div>

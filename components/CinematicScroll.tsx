@@ -110,7 +110,7 @@ export default function CinematicScroll() {
       const w = img.naturalWidth * scale;
       const h = img.naturalHeight * scale;
 
-      ctx.fillStyle = "#1D1D1B";
+      ctx.fillStyle = "#FFFFF7";
       ctx.fillRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     };
@@ -373,17 +373,17 @@ export default function CinematicScroll() {
     <div ref={rootRef} className="relative h-[700vh]">
       {/* Loading veil */}
       <div
-        className="grain-dark fixed inset-0 z-50 flex items-center justify-center bg-ink transition-opacity duration-1000"
+        className="grain fixed inset-0 z-50 flex items-center justify-center bg-stone transition-opacity duration-1000"
         style={{
           opacity: ready ? 0 : 1,
           pointerEvents: ready ? "none" : "auto",
         }}
       >
         <div className="text-center">
-          <div className="font-display text-[13vw] leading-none text-bone/90 md:text-[7vw]">
+          <div className="font-display text-[13vw] leading-none text-ink/90 md:text-[7vw]">
             {Math.round(progress * 100)}
           </div>
-          <div className="mt-6 text-[10px] uppercase tracking-brand text-stone">
+          <div className="mt-6 text-[10px] uppercase tracking-brand text-ink/50">
             {site.name}
           </div>
         </div>
@@ -393,8 +393,16 @@ export default function CinematicScroll() {
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />
 
-        {/* Legibility gradients — kept subtle so the render stays the hero */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/45 via-transparent to-ink/60" />
+        {/*
+          Legibility wash — light, not dark, because the beat text is now ink
+          (dark) rather than white. A dark text needs a LIGHT cushion under it,
+          same as the old white text needed a dark one; the mechanism is
+          identical, just inverted. The renders are naturally light-toned
+          (clay model, bright interiors) so this also does far less work than
+          the old dark version did, which is exactly the point — less black
+          wash across the page's largest section.
+        */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white3/40 via-transparent to-white3/50" />
 
         {/* ---- Beat 1: hero ---- */}
         <div
@@ -403,7 +411,7 @@ export default function CinematicScroll() {
         >
           <p
             data-anim
-            className="mb-6 max-w-full text-[9px] uppercase tracking-wide2 text-bone/70 md:text-[11px]"
+            className="mb-6 max-w-full text-[9px] uppercase tracking-wide2 text-ink/70 md:text-[11px]"
           >
             {site.beats.hero.eyebrow}
           </p>
@@ -417,23 +425,23 @@ export default function CinematicScroll() {
           */}
           <h1
             data-anim="display"
-            className="-mr-[0.28em] max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-light leading-[0.95] tracking-[0.28em] text-bone"
+            className="-mr-[0.28em] max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-light leading-[0.95] tracking-[0.28em] text-ink"
           >
             {site.beats.hero.title}
           </h1>
           <p
             data-anim
-            className="mt-8 font-display text-2xl font-light italic text-bone/85 md:text-4xl"
+            className="mt-8 font-display text-2xl font-light italic text-ink/85 md:text-4xl"
           >
             {site.beats.hero.subtitle}
           </p>
           <div
             data-anim
-            className="mt-10 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-bone/55"
+            className="mt-10 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
           >
             {site.positioning.map((p, i) => (
               <span key={p} className="flex items-center gap-3">
-                {i > 0 && <span className="h-px w-6 bg-bone/30" />}
+                {i > 0 && <span className="h-px w-6 bg-ink/30" />}
                 {p}
               </span>
             ))}
@@ -447,7 +455,7 @@ export default function CinematicScroll() {
         >
           <p
             data-anim="display"
-            className="max-w-2xl text-center font-display text-3xl font-light leading-snug text-bone md:text-5xl"
+            className="max-w-2xl text-center font-display text-3xl font-light leading-snug text-ink md:text-5xl"
           >
             {site.beats.reveal.line}
           </p>
@@ -460,7 +468,7 @@ export default function CinematicScroll() {
         >
           <p
             data-anim="display"
-            className="max-w-3xl text-center font-display text-3xl font-light leading-snug text-bone md:text-5xl"
+            className="max-w-3xl text-center font-display text-3xl font-light leading-snug text-ink md:text-5xl"
           >
             {site.beats.interior.line}
           </p>
@@ -474,18 +482,18 @@ export default function CinematicScroll() {
             className="pointer-events-none absolute inset-0 flex items-center px-8 md:px-[10vw]"
           >
             <div className="max-w-xl">
-              <span data-anim className="font-display text-sm text-ember">
+              <span data-anim className="font-display text-sm text-ink/60">
                 {s.index}
               </span>
               <h2
                 data-anim="display"
-                className="mt-3 font-display text-4xl font-light leading-tight text-bone md:text-6xl"
+                className="mt-3 font-display text-4xl font-light leading-tight text-ink md:text-6xl"
               >
                 {s.title}
               </h2>
               <p
                 data-anim
-                className="mt-5 max-w-md text-sm font-light leading-relaxed text-bone/75 md:text-base"
+                className="mt-5 max-w-md text-sm font-light leading-relaxed text-ink/75 md:text-base"
               >
                 {s.body}
               </p>
@@ -500,7 +508,7 @@ export default function CinematicScroll() {
         >
           <span
             data-anim
-            className="text-[9px] uppercase tracking-brand text-bone/50"
+            className="text-[9px] uppercase tracking-brand text-ink/50"
           >
             Scroll
           </span>

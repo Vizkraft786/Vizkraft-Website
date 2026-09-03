@@ -25,10 +25,10 @@ export default function Marquee() {
     >
       {items.map((label, i) => (
         <li key={`${label}-${i}`} className="flex shrink-0 items-center gap-10 md:gap-16">
-          <span className="whitespace-nowrap font-display text-2xl font-light uppercase tracking-wide2 text-bone/85 md:text-4xl">
+          <span className="whitespace-nowrap font-display text-2xl font-light uppercase tracking-wide2 text-ink/85 md:text-4xl">
             {label}
           </span>
-          <span aria-hidden className="text-lg text-acid">
+          <span aria-hidden className="text-lg text-ink/35">
             &#8853;
           </span>
         </li>
@@ -39,7 +39,7 @@ export default function Marquee() {
   return (
     <section
       aria-label="Capabilities"
-      className="marquee grain-dark overflow-hidden border-y border-bone/10 bg-ink py-7 md:py-9"
+      className="marquee grain overflow-hidden border-y border-ink/10 bg-stone py-7 md:py-9"
     >
       <div className="marquee__track flex w-max">
         <Row />

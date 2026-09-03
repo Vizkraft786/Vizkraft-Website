@@ -13,13 +13,13 @@
 }
 
 html {
-  background: #1D1D1B;
+  background: #E7E7DD;
 }
 
 body {
   margin: 0;
-  background: #1D1D1B;
-  color: #FFFFF7;
+  background: #E7E7DD;
+  color: #1D1D1B;
   font-family: var(--font-sans);
   overflow-x: hidden;
 }
@@ -137,7 +137,13 @@ html.lenis body {
   position: absolute;
   inset: 0 var(--tab-w, 11px) 0 0;
   border-radius: 2px 0 0 3px;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.05);
+  /* Stronger than before: on a black rail ground the gap between drawers did
+     the work of separating them. On a white ground that gap disappears
+     visually, so each drawer needs to read as a distinct object on its own —
+     an outer drop shadow plus a slightly darker inner edge. */
+  box-shadow:
+    inset -1px 0 0 rgba(0, 0, 0, 0.1),
+    2px 0 10px -6px rgba(0, 0, 0, 0.25);
 }
 
 .drawer__tab {

@@ -6,6 +6,11 @@ import { site } from "@/lib/site-config";
 /**
  * Minimal persistent nav. Deliberately understated during the cinematic so it
  * never competes with the render, then gains a backdrop once past it.
+ *
+ * Text is ink at all times, transparent or solid — the cinematic beneath it
+ * now carries dark text over a light wash rather than the other way round, so
+ * a light-nav/dark-nav split by scroll position isn't needed any more; ink
+ * reads correctly against both states.
  */
 export default function Nav() {
   const [solid, setSolid] = useState(false);
@@ -20,13 +25,13 @@ export default function Nav() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-colors duration-500 ${
-        solid ? "grain-dark bg-ink/85 backdrop-blur-md" : "bg-transparent"
+        solid ? "grain bg-stone/90 backdrop-blur-md" : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-6 md:px-10">
         <a
           href="#top"
-          className="text-[11px] uppercase tracking-brand text-bone/90 transition-opacity hover:opacity-70"
+          className="text-[11px] uppercase tracking-brand text-ink/90 transition-opacity hover:opacity-70"
         >
           {site.name}
         </a>
@@ -34,13 +39,13 @@ export default function Nav() {
         <div className="flex items-center gap-8">
           <a
             href="#work"
-            className="hidden text-[10px] uppercase tracking-wide2 text-bone/60 transition-colors hover:text-bone md:block"
+            className="hidden text-[10px] uppercase tracking-wide2 text-ink/60 transition-colors hover:text-ink md:block"
           >
             Work
           </a>
           <a
             href="#contact"
-            className="text-[10px] uppercase tracking-wide2 text-bone/60 transition-colors hover:text-bone"
+            className="text-[10px] uppercase tracking-wide2 text-ink/60 transition-colors hover:text-ink"
           >
             Contact
           </a>
