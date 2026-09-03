@@ -308,6 +308,10 @@ export default function CinematicScroll() {
            */
           arm("brand");
 
+          // No glass() calls here — brand has no [data-glass] element by
+          // design (removed per client correction), so its entrance/exit is
+          // just the display + plain text treatment, same shape as every
+          // other beat had before glass was layered on.
           const brandExit = gsap.timeline({ paused: true });
           brandExit
             .to(lines("brand"), { opacity: 1, duration: 1.2 })
@@ -317,8 +321,7 @@ export default function CinematicScroll() {
               duration: 1,
               ease: "power2.out",
               stagger: 0.06,
-            })
-            .to(glass("brand"), { opacity: 0, y: -8, duration: 1, ease: "power2.out" }, "<");
+            });
 
           gsap
             .timeline({
@@ -326,18 +329,13 @@ export default function CinematicScroll() {
                 timelines.push({ tl: brandExit, start: 0, end: 0.06 });
               },
             })
-            .to(glass("brand"), { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 0)
-            .to(
-              display("brand"),
-              {
-                opacity: 1,
-                y: 0,
-                clipPath: "inset(0% 0% 0% 0%)",
-                duration: 1.1,
-                ease: "power4.out",
-              },
-              0
-            )
+            .to(display("brand"), {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0% 0% 0%)",
+              duration: 1.1,
+              ease: "power4.out",
+            })
             .to(
               plain("brand"),
               {
@@ -490,40 +488,36 @@ export default function CinematicScroll() {
         */}
         <div
           data-beat="brand"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden px-6 text-center"
+          className="pointer-events-none absolute inset-0 flex items-end justify-start overflow-hidden px-6 pb-12 text-left md:pl-[6vw] md:pb-[9vh]"
         >
-          <div
-            data-glass
-            className="liquid-glass liquid-glass--primary flex flex-col items-center"
-          >
+          {/*
+            No glass here by design — this moment is a direct correction
+            away from it (client call). Bottom-left corner rather than the
+            earlier centred title-card treatment.
+          */}
+          <div className="flex flex-col items-start">
             <p
               data-anim
-              className="mb-6 max-w-full text-[9px] uppercase tracking-wide2 text-ink/70 md:text-[11px]"
+              className="mb-5 max-w-full text-[9px] uppercase tracking-wide2 text-ink/70 md:text-[11px]"
             >
               {site.beats.hero.eyebrow}
             </p>
             {/*
-              Anton is a condensed, already-heavy face — wide luxury tracking
-              (the old 0.28em) fights that density instead of complementing
-              it, so this drops to a near-normal value that lets the
-              condensed letterforms read as themselves rather than being
-              stretched apart. The old -mr optical-centring hack is gone too;
-              it only existed to compensate for that wide spacing's trailing
-              gap, which no longer exists at this value.
-
-              This is the ONLY text on the page allowed at this scale — every
-              other headline-tier element (tagline, service titles) sits well
-              below it, so the wordmark stays the singular large moment.
+              Tracking is a deliberate exception to "subtle everywhere else":
+              spaced wide enough that the word spans roughly two-thirds of
+              the viewport width, as its own graphic/branding moment rather
+              than body-style type. Verified against actual rendered width,
+              not eyeballed — see the width check in verification.
             */}
             <h1
               data-anim="display"
-              className="max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-normal leading-[0.92] tracking-[0.02em] text-ink"
+              className="max-w-full font-display text-[clamp(2rem,7.4vw,6.5rem)] font-bold leading-[0.95] tracking-[0.5em] text-ink"
             >
               {site.beats.hero.title}
             </h1>
             <div
               data-anim
-              className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
+              className="mt-7 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
             >
               {site.positioning.map((p, i) => (
                 <span key={p} className="flex items-center gap-3">

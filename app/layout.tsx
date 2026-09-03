@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { Anton, Montserrat } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site-config";
 
 /**
- * Anton for display, Montserrat for everything else — matched against the
- * client-supplied font reference, not picked by eye.
+ * Inter for display/heading/labels, Montserrat for body — matched against a
+ * second, more specific font reference (superseding the earlier Anton
+ * match).
  *
- * The reference's heading is a heavy CONDENSED geometric grotesque (tight,
- * dense, black-weight, all-caps) — that's a materially different character
- * from Archivo's wide neutral grotesque, which is why this is a real font
- * swap rather than a weight tweak. Anton is the closest match available on
- * Google Fonts: same condensed-black density, same geometric bones.
+ * That reference's headline ("WE'RE NOT NEW HERE...") is a bold NEUTRAL
+ * grotesque — normal width, tightly set, moderate-heavy (Bold/SemiBold, not
+ * Black) — a genuinely different character from Anton's condensed-black
+ * density. Its nav links and section labels ("HOW WE WORK", "OUR TEAM") use
+ * the same family at lighter weight with restrained, close-set tracking —
+ * not the wide luxury spacing this project had been using. Inter is the
+ * closest match: neutral, geometric, reads correctly at both display and
+ * label sizes without the condensed narrowing Anton has.
  *
- * The reference's nav/label typography reads as a clean geometric sans at
- * matching weight to the body copy elsewhere on that reference site — rather
- * than adding a third family for "subheading" specifically, Montserrat
- * covers both roles (uppercase micro-labels at Medium/SemiBold, body copy at
- * Regular), which is also what the client asked for on body text directly.
- * Two families, not three — less visual noise, and Montserrat's own
- * geometric construction is close enough to the reference's label type that
- * splitting it out would add complexity without a visible gain.
+ * Body stays Montserrat per explicit instruction — this reference governs
+ * heading/subheading only.
  */
-const display = Anton({
+const display = Inter({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });

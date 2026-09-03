@@ -60,9 +60,17 @@ module.exports = {
         display: ["var(--font-display)", "Helvetica Neue", "Arial", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
+      /**
+       * Reduced from 0.42em/0.18em to match the font-reference site's label
+       * treatment — its nav links and section eyebrows ("HOW WE WORK", "OUR
+       * TEAM") sit close, subtly opened, never the wide luxury spacing these
+       * tokens previously used. Site-wide tokens, so this corrects every
+       * micro-label (nav, eyebrow, footer, section labels) in one place
+       * rather than needing per-component fixes.
+       */
       letterSpacing: {
-        brand: "0.42em",
-        wide2: "0.18em",
+        brand: "0.12em",
+        wide2: "0.08em",
       },
     },
   },
