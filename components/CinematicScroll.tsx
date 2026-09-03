@@ -182,6 +182,14 @@ export default function CinematicScroll() {
           const display = (b: string) => `[data-beat='${b}'] [data-anim='display']`;
           const plain = (b: string) =>
             `[data-beat='${b}'] [data-anim]:not([data-anim='display'])`;
+          /**
+           * The liquid-glass panel wrapping each beat's text. A distinct
+           * attribute rather than reusing data-anim, so its animation is
+           * fully additive — nothing about the existing display/plain
+           * treatment changes, this just also fades/offsets the glass panel
+           * in sync with them.
+           */
+          const glass = (b: string) => `[data-beat='${b}'] [data-glass]`;
 
           /**
            * Rest state for a beat's contents.
@@ -206,6 +214,10 @@ export default function CinematicScroll() {
               clipPath: "inset(100% 0% 0% 0%)",
             });
             gsap.set(plain(b), { opacity: 0, y: 14, x });
+            // Glass arrives from the same side as its text, on a shorter
+            // vertical rise — a panel materialising reads better as a subtle
+            // settle than a full 14px slide.
+            gsap.set(glass(b), { opacity: 0, y: 10, x });
           };
 
           /**
@@ -235,14 +247,25 @@ export default function CinematicScroll() {
             const tl = gsap.timeline({ paused: true });
             timelines.push({ tl, start, end });
 
-            tl.to(display(b), {
-              opacity: 1,
-              y: 0,
-              x: 0,
-              clipPath: "inset(0% 0% 0% 0%)",
-              duration: 1,
-              ease: "power4.out",
-            })
+            const exitX = x === 0 ? 0 : x > 0 ? 14 : -14;
+
+            tl.to(
+              glass(b),
+              { opacity: 1, y: 0, x: 0, duration: 0.9, ease: "power3.out" },
+              0
+            )
+              .to(
+                display(b),
+                {
+                  opacity: 1,
+                  y: 0,
+                  x: 0,
+                  clipPath: "inset(0% 0% 0% 0%)",
+                  duration: 1,
+                  ease: "power4.out",
+                },
+                0
+              )
               .to(
                 plain(b),
                 {
@@ -258,15 +281,21 @@ export default function CinematicScroll() {
               .to(lines(b), { opacity: 1, duration: 1.3 })
               // Leaves the way the camera is travelling — upward and past,
               // plus a small continuation of x for services (0 for everything
-              // else, so this is a no-op there).
+              // else, so this is a no-op there). Glass exits in lockstep,
+              // "<" pinning it to the same start as the text's own exit.
               .to(lines(b), {
                 opacity: 0,
                 y: -12,
-                x: x === 0 ? 0 : x > 0 ? 14 : -14,
+                x: exitX,
                 duration: 0.9,
                 ease: "power2.out",
                 stagger: 0.06,
-              });
+              })
+              .to(
+                glass(b),
+                { opacity: 0, y: -8, x: exitX, duration: 0.9, ease: "power2.out" },
+                "<"
+              );
           };
 
           /**
@@ -288,7 +317,8 @@ export default function CinematicScroll() {
               duration: 1,
               ease: "power2.out",
               stagger: 0.06,
-            });
+            })
+            .to(glass("brand"), { opacity: 0, y: -8, duration: 1, ease: "power2.out" }, "<");
 
           gsap
             .timeline({
@@ -296,13 +326,18 @@ export default function CinematicScroll() {
                 timelines.push({ tl: brandExit, start: 0, end: 0.06 });
               },
             })
-            .to(display("brand"), {
-              opacity: 1,
-              y: 0,
-              clipPath: "inset(0% 0% 0% 0%)",
-              duration: 1.1,
-              ease: "power4.out",
-            })
+            .to(glass("brand"), { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 0)
+            .to(
+              display("brand"),
+              {
+                opacity: 1,
+                y: 0,
+                clipPath: "inset(0% 0% 0% 0%)",
+                duration: 1.1,
+                ease: "power4.out",
+              },
+              0
+            )
             .to(
               plain("brand"),
               {
@@ -371,7 +406,10 @@ export default function CinematicScroll() {
     mm.add({ motion: "(prefers-reduced-motion: reduce)" }, () => {
       const ctx = gsap.context(() => {
         const fade = (b: string, start: number, end: number, lead = false) => {
-          const sel = `[data-beat='${b}'] [data-anim]`;
+          // Glass panels fold into the same selector — reduced motion means
+          // a simpler opacity-only fade for everything in the beat, glass
+          // included, rather than glass getting its own separate treatment.
+          const sel = `[data-beat='${b}'] [data-anim], [data-beat='${b}'] [data-glass]`;
           gsap.set(sel, { opacity: lead ? 1 : 0, y: 0, x: 0, clipPath: "none" });
 
           const tl = gsap.timeline({
@@ -452,42 +490,48 @@ export default function CinematicScroll() {
         */}
         <div
           data-beat="brand"
-          className="pointer-events-none absolute inset-0 flex w-full flex-col items-center justify-center overflow-hidden px-6 text-center"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden px-6 text-center"
         >
-          <p
-            data-anim
-            className="mb-6 max-w-full text-[9px] uppercase tracking-wide2 text-ink/70 md:text-[11px]"
-          >
-            {site.beats.hero.eyebrow}
-          </p>
-          {/*
-            Sized against the tracking, not independently of it: at 0.28em
-            letter-spacing an 8-character word runs ~6.6x the font size, so
-            anything past ~11vw pushes the wordmark wider than the viewport
-            and drags the whole centred stack off-axis with it.
-            The trailing -mr offsets the space after the final letter so the
-            word sits optically centred rather than pulled left.
-
-            This is the ONLY text on the page allowed at this scale — every
-            other headline-tier element (tagline, service titles) sits well
-            below it, so the wordmark stays the singular large moment.
-          */}
-          <h1
-            data-anim="display"
-            className="-mr-[0.28em] max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-light leading-[0.95] tracking-[0.28em] text-ink"
-          >
-            {site.beats.hero.title}
-          </h1>
           <div
-            data-anim
-            className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
+            data-glass
+            className="liquid-glass liquid-glass--primary flex flex-col items-center"
           >
-            {site.positioning.map((p, i) => (
-              <span key={p} className="flex items-center gap-3">
-                {i > 0 && <span className="h-px w-6 bg-ink/30" />}
-                {p}
-              </span>
-            ))}
+            <p
+              data-anim
+              className="mb-6 max-w-full text-[9px] uppercase tracking-wide2 text-ink/70 md:text-[11px]"
+            >
+              {site.beats.hero.eyebrow}
+            </p>
+            {/*
+              Anton is a condensed, already-heavy face — wide luxury tracking
+              (the old 0.28em) fights that density instead of complementing
+              it, so this drops to a near-normal value that lets the
+              condensed letterforms read as themselves rather than being
+              stretched apart. The old -mr optical-centring hack is gone too;
+              it only existed to compensate for that wide spacing's trailing
+              gap, which no longer exists at this value.
+
+              This is the ONLY text on the page allowed at this scale — every
+              other headline-tier element (tagline, service titles) sits well
+              below it, so the wordmark stays the singular large moment.
+            */}
+            <h1
+              data-anim="display"
+              className="max-w-full font-display text-[clamp(2.75rem,11vw,9.5rem)] font-normal leading-[0.92] tracking-[0.02em] text-ink"
+            >
+              {site.beats.hero.title}
+            </h1>
+            <div
+              data-anim
+              className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
+            >
+              {site.positioning.map((p, i) => (
+                <span key={p} className="flex items-center gap-3">
+                  {i > 0 && <span className="h-px w-6 bg-ink/30" />}
+                  {p}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -502,12 +546,14 @@ export default function CinematicScroll() {
           data-beat="tagline"
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center"
         >
-          <p
-            data-anim="display"
-            className="max-w-2xl font-display text-2xl font-light italic leading-snug text-ink md:text-4xl"
-          >
-            {site.beats.hero.subtitle}
-          </p>
+          <div data-glass className="liquid-glass liquid-glass--primary">
+            <p
+              data-anim="display"
+              className="max-w-2xl font-display text-2xl font-light italic leading-snug text-ink md:text-4xl"
+            >
+              {site.beats.hero.subtitle}
+            </p>
+          </div>
         </div>
 
         {/*
@@ -521,12 +567,14 @@ export default function CinematicScroll() {
           data-beat="purpose"
           className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
         >
-          <p
-            data-anim="display"
-            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
-          >
-            {site.beats.purpose.line}
-          </p>
+          <div data-glass className="liquid-glass liquid-glass--quiet">
+            <p
+              data-anim="display"
+              className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
+            >
+              {site.beats.purpose.line}
+            </p>
+          </div>
         </div>
 
         {/* ---- Moment 4: the reveal — left third, same restrained tier as purpose ---- */}
@@ -534,12 +582,14 @@ export default function CinematicScroll() {
           data-beat="reveal"
           className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
         >
-          <p
-            data-anim="display"
-            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
-          >
-            {site.beats.reveal.line}
-          </p>
+          <div data-glass className="liquid-glass liquid-glass--quiet">
+            <p
+              data-anim="display"
+              className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
+            >
+              {site.beats.reveal.line}
+            </p>
+          </div>
         </div>
 
         {/* ---- Moment 5: into the space — same tier, same left third ---- */}
@@ -547,12 +597,14 @@ export default function CinematicScroll() {
           data-beat="interior"
           className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
         >
-          <p
-            data-anim="display"
-            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
-          >
-            {site.beats.interior.line}
-          </p>
+          <div data-glass className="liquid-glass liquid-glass--quiet">
+            <p
+              data-anim="display"
+              className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
+            >
+              {site.beats.interior.line}
+            </p>
+          </div>
         </div>
 
         {/*
@@ -572,7 +624,10 @@ export default function CinematicScroll() {
                   : "justify-end md:pl-[14vw] md:pr-[8vw]"
               }`}
             >
-              <div className="max-w-sm text-left md:max-w-md">
+              <div
+                data-glass
+                className="liquid-glass liquid-glass--service max-w-sm text-left md:max-w-md"
+              >
                 <span data-anim className="font-display text-sm text-ink/60">
                   {s.index}
                 </span>

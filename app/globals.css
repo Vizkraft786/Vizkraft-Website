@@ -2,10 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-}
+/*
+  --font-display / --font-sans are NOT declared here — next/font already
+  injects the real values via the className applied to <html> in layout.tsx.
+  A manual :root re-declaration previously hardcoded the old font names
+  ("Archivo", "Inter") as literal strings, which is exactly the kind of stale
+  duplication that silently wins the cascade and undoes a font swap made in
+  layout.tsx. Tailwind's fontFamily config (tailwind.config.js) is the
+  correct single place for the fallback chain.
+*/
 
 * {
   -webkit-font-smoothing: antialiased;
@@ -229,6 +234,101 @@ html.lenis body {
   /* Without the scroll there is no reason to hold the duplicate row. */
   .marquee__track > ul[aria-hidden="true"] {
     display: none;
+  }
+}
+
+/* ------------------------------------------------------------- liquid glass --
+   A CSS translation of Apple's Liquid Glass material, not a copy of the API
+   (there is no SwiftUI on a Next.js page). What's translated is the material
+   itself, per the skill's own documented parameters:
+
+   - `.regular` glass is medium transparency with FULL background adaptation;
+     `.clear` is high transparency with LIMITED adaptation, meant for bold/
+     bright media backgrounds — exactly our case (a photographic render
+     behind translucent text). The three tiers below sit at different points
+     between those two poles rather than being one fixed recipe.
+   - Real Liquid Glass blurs AND boosts saturation of what's behind it — that
+     saturation lift is what reads as "refractive" rather than just foggy.
+     Every tier pairs blur with saturate() for exactly that reason.
+   - Apple's GlassEffectContainer groups nearby glass into one shared
+     sampling region so adjacent panels read as the same material. There's
+     only ever one glass panel visible at a time here (the single-beat-
+     controller architecture already guarantees that), so the equivalent is
+     simpler: one shared recipe (this block) that every tier draws from,
+     rather than each panel inventing its own look.
+   - No tint. The brief is explicit that the glass should read as
+     environmental, not branded — background = white at low, tier-varying
+     opacity only, never a hue.
+
+   Content-sized by design (`width: fit-content`, capped so it can't overflow
+   on mobile) — never a screen-width panel.
+   ------------------------------------------------------------------------- */
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  max-width: calc(100vw - 3rem);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  background: rgba(255, 255, 255, var(--glass-bg-a));
+  border: 1px solid rgba(255, 255, 255, var(--glass-border-a));
+  border-radius: var(--glass-radius);
+  box-shadow:
+    /* Top edge catching light — the cheapest honest stand-in for real
+       specular highlight/refraction CSS can do. */
+    inset 0 1px 0 rgba(255, 255, 255, var(--glass-top-highlight-a)),
+    /* Soft diffuse lift, not a harsh UI-card shadow. */
+    0 18px 40px -24px rgba(0, 0, 0, var(--glass-shadow-a));
+}
+
+/* Primary — brand mark + tagline. The most present tier, still restrained. */
+.liquid-glass--primary {
+  --glass-blur: 24px;
+  --glass-sat: 160%;
+  --glass-bg-a: 0.12;
+  --glass-border-a: 0.18;
+  --glass-top-highlight-a: 0.35;
+  --glass-shadow-a: 0.1;
+  --glass-radius: 28px;
+  padding: 2.25rem 2.75rem;
+}
+
+/* Quiet — purpose statement and the reveal/interior story captions. */
+.liquid-glass--quiet {
+  --glass-blur: 16px;
+  --glass-sat: 150%;
+  --glass-bg-a: 0.08;
+  --glass-border-a: 0.14;
+  --glass-top-highlight-a: 0.25;
+  --glass-shadow-a: 0.07;
+  --glass-radius: 20px;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Service — the most restrained tier. A floating information layer, not a card. */
+.liquid-glass--service {
+  --glass-blur: 12px;
+  --glass-sat: 140%;
+  --glass-bg-a: 0.06;
+  --glass-border-a: 0.12;
+  --glass-top-highlight-a: 0.18;
+  --glass-shadow-a: 0.05;
+  --glass-radius: 16px;
+  padding: 1rem 1.25rem;
+}
+
+@media (max-width: 767px) {
+  .liquid-glass--primary {
+    --glass-radius: 20px;
+    padding: 1.5rem 1.75rem;
+  }
+  .liquid-glass--quiet {
+    --glass-radius: 16px;
+    padding: 1rem 1.25rem;
+  }
+  .liquid-glass--service {
+    --glass-radius: 14px;
+    padding: 0.875rem 1rem;
   }
 }
 
