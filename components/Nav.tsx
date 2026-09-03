@@ -20,7 +20,7 @@ export default function Nav() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-colors duration-500 ${
-        solid ? "bg-ink/85 backdrop-blur-md" : "bg-transparent"
+        solid ? "grain-dark bg-ink/85 backdrop-blur-md" : "bg-transparent"
       }`}
     >
       <nav className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-6 md:px-10">

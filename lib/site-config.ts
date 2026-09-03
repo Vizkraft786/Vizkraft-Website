@@ -67,15 +67,23 @@ export const site = {
   ],
 
   /**
-   * TODO: real projects to be added later — placeholders for layout only.
+   * PLACEHOLDER — 9 project drawers.
+   *
+   * `renders` is a count, not a list of files: the archive draws that many
+   * blank plates so the scatter layout can be judged at real density before
+   * any imagery exists. Swap each entry for a real `images: string[]` once the
+   * renders are chosen.
    */
   projects: [
-    { id: "p1", title: "Project Title", category: "Residential", year: "2026" },
-    { id: "p2", title: "Project Title", category: "Interior", year: "2026" },
-    { id: "p3", title: "Project Title", category: "Exterior", year: "2026" },
-    { id: "p4", title: "Project Title", category: "Commercial", year: "2026" },
-    { id: "p5", title: "Project Title", category: "Residential", year: "2025" },
-    { id: "p6", title: "Project Title", category: "Animation", year: "2025" },
+    { id: "p1", title: "Project 1", category: "Residential", year: "2026", renders: 7 },
+    { id: "p2", title: "Project 2", category: "Interior", year: "2026", renders: 9 },
+    { id: "p3", title: "Project 3", category: "Exterior", year: "2026", renders: 6 },
+    { id: "p4", title: "Project 4", category: "Commercial", year: "2026", renders: 8 },
+    { id: "p5", title: "Project 5", category: "Residential", year: "2025", renders: 6 },
+    { id: "p6", title: "Project 6", category: "Animation", year: "2025", renders: 9 },
+    { id: "p7", title: "Project 7", category: "Interior", year: "2025", renders: 7 },
+    { id: "p8", title: "Project 8", category: "Exterior", year: "2025", renders: 8 },
+    { id: "p9", title: "Project 9", category: "Residential", year: "2024", renders: 6 },
   ],
 } as const;
 

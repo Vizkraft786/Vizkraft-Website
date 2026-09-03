@@ -1,42 +1,43 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { site } from "@/lib/site-config";
+import { scatter } from "@/lib/scatter";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Selected work, presented as a horizontal rail of physical folders.
+ * The archive — nine drawers standing side by side, seen face-on.
  *
- * PLACEHOLDER — folders carry no project imagery yet. Real covers, titles and
- * case-study links get wired in later; what's established here is the layout,
- * the folder object itself and the hover behaviour.
+ * Hover widens a drawer and pushes its neighbours aside; clicking one spills
+ * its renders across the screen over a blurred backdrop. There is no dragging:
+ * all nine are visible at once, so nothing is hidden behind a gesture.
  *
- * Built by hand rather than pulled from Magic UI / SmoothUI / Unlumen: none of
- * them ships a physical-folder component (their "File Tree" is a sidebar tree,
- * not this), and all three are Motion-based — a second animation runtime is not
- * worth it on a page already carrying 120 sequence frames and GSAP.
+ * PLACEHOLDER — plates are blank. Real renders replace them later; the counts
+ * in site-config are already the intended density so the scatter can be judged
+ * now rather than after imagery lands.
  */
 export default function Work() {
   const ref = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState<number | null>(null);
 
-  /* --------------------------------------------------- reveal on scroll --- */
+  /* ------------------------------------------------- drawers reveal ----- */
   useEffect(() => {
     const mm = gsap.matchMedia();
 
     mm.add({ motion: "(prefers-reduced-motion: no-preference)" }, () => {
       const ctx = gsap.context(() => {
-        gsap.from("[data-folder]", {
+        gsap.from("[data-drawer]", {
+          yPercent: 8,
           opacity: 0,
-          y: 26,
-          rotate: -1.5,
-          duration: 0.65,
+          duration: 0.75,
           ease: "power3.out",
-          stagger: 0.06,
-          scrollTrigger: { trigger: railRef.current, start: "top 82%" },
+          stagger: 0.05,
+          scrollTrigger: { trigger: railRef.current, start: "top 80%" },
         });
       }, ref);
       return () => ctx.revert();
@@ -44,11 +45,11 @@ export default function Work() {
 
     mm.add({ motion: "(prefers-reduced-motion: reduce)" }, () => {
       const ctx = gsap.context(() => {
-        gsap.from("[data-folder]", {
+        gsap.from("[data-drawer]", {
           opacity: 0,
           duration: 0.4,
-          stagger: 0.04,
-          scrollTrigger: { trigger: railRef.current, start: "top 82%" },
+          stagger: 0.03,
+          scrollTrigger: { trigger: railRef.current, start: "top 80%" },
         });
       }, ref);
       return () => ctx.revert();
@@ -57,91 +58,49 @@ export default function Work() {
     return () => mm.revert();
   }, []);
 
-  /* ------------------------------------------------------ drag to scroll --- */
+  /* --------------------------------------------------- overlay open ----- */
   useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
+    if (open === null) return;
 
-    let down = false;
-    let startX = 0;
-    let startLeft = 0;
-    let moved = false;
+    // Lock the page behind the overlay, and restore the exact scrollbar gutter
+    // so the layout doesn't jump as it opens and closes.
+    const prevOverflow = document.body.style.overflow;
+    const gutter = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (gutter > 0) document.body.style.paddingRight = `${gutter}px`;
 
-    const onDown = (e: PointerEvent) => {
-      // Ignore secondary buttons so right-click doesn't start a drag.
-      if (e.button !== 0) return;
-      down = true;
-      moved = false;
-      startX = e.clientX;
-      startLeft = rail.scrollLeft;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
     };
+    window.addEventListener("keydown", onKey);
 
-    const onMove = (e: PointerEvent) => {
-      if (!down) return;
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 4) {
-        moved = true;
-        rail.setPointerCapture?.(e.pointerId);
-      }
-      rail.scrollLeft = startLeft - dx;
-    };
-
-    const onUp = () => {
-      down = false;
-      // Suppress the click that follows a drag so a folder isn't "opened"
-      // just because the user flicked the rail.
-      if (moved) {
-        const swallow = (ev: Event) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-        };
-        rail.addEventListener("click", swallow, { capture: true, once: true });
-      }
-    };
-
-    /**
-     * Axis-aware wheel handling.
-     *
-     * `data-lenis-prevent` was the obvious way to let this element scroll, but
-     * it hands Lenis the entire gesture: a normal downward wheel with the
-     * cursor over the rail then scrolls neither the rail (no vertical overflow)
-     * nor the page, and the visitor is stuck. So only horizontally-dominant
-     * gestures — trackpad swipes, shift+wheel — are claimed here, and anything
-     * vertical is left alone to scroll the page as usual.
-     */
-    const onWheel = (e: WheelEvent) => {
-      const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
-      if (!horizontal) return;
-
-      const delta = e.shiftKey && e.deltaX === 0 ? e.deltaY : e.deltaX;
-      const atStart = rail.scrollLeft <= 0 && delta < 0;
-      const atEnd =
-        rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 1 && delta > 0;
-
-      // Let the gesture bubble at the ends so it doesn't feel trapped.
-      if (atStart || atEnd) return;
-
-      e.preventDefault();
-      rail.scrollLeft += delta;
-    };
-
-    rail.addEventListener("pointerdown", onDown);
-    rail.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ctx = gsap.context(() => {
+      gsap.from("[data-plate]", {
+        opacity: 0,
+        scale: reduce ? 1 : 0.92,
+        // Plates rise out of the drawer rather than appearing in place.
+        y: reduce ? 0 : 26,
+        duration: reduce ? 0.25 : 0.55,
+        ease: "power3.out",
+        stagger: reduce ? 0.02 : 0.045,
+      });
+    }, overlayRef);
 
     return () => {
-      rail.removeEventListener("pointerdown", onDown);
-      rail.removeEventListener("wheel", onWheel);
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = "";
+      ctx.revert();
     };
-  }, []);
+  }, [open]);
+
+  const active = open === null ? null : site.projects[open];
 
   return (
-    <section ref={ref} id="work" className="bg-ink px-6 py-28 md:px-10 md:py-40">
+    <section ref={ref} id="work" className="grain-dark bg-ink px-6 py-28 md:px-10 md:py-40">
       <div className="mx-auto max-w-[1600px]">
-        <div className="mb-4 flex items-end justify-between gap-6 border-b border-bone/10 pb-8">
+        <div className="mb-14 flex items-end justify-between gap-6 border-b border-bone/10 pb-8">
           <div>
             <p className="mb-4 text-[10px] uppercase tracking-wide2 text-stone">
               Archive
@@ -151,56 +110,104 @@ export default function Work() {
             </h2>
           </div>
           <span className="hidden shrink-0 text-[10px] uppercase tracking-wide2 text-stone md:block">
-            Drag to browse
+            Open a drawer
           </span>
         </div>
-      </div>
 
-      {/* Full-bleed rail so folders run past both edges of the page. */}
-      <div className="folder-rail-mask -mx-6 mt-14 md:-mx-10">
+        {/* The drawers */}
         <div
           ref={railRef}
-          className="folder-rail no-scrollbar flex cursor-grab gap-14 overflow-x-auto px-6 pb-24 pt-6 active:cursor-grabbing md:gap-16 md:px-10"
-          style={{ scrollSnapType: "x proximity" }}
+          className="drawer-rail flex h-[58vh] min-h-[380px] w-full gap-[3px] overflow-hidden md:h-[68vh]"
         >
-          {site.projects.map((p) => (
-            <article
+          {site.projects.map((p, i) => (
+            <button
               key={p.id}
-              data-folder
-              tabIndex={0}
-              aria-label={`${p.title} — ${p.category}, ${p.year}`}
-              className="folder group outline-none"
-              style={{ scrollSnapAlign: "center" }}
+              data-drawer
+              type="button"
+              onClick={() => setOpen(i)}
+              aria-label={`Open ${p.title} — ${p.renders} renders`}
+              className="drawer group relative"
+              style={{ ["--tab-top" as string]: `${8 + ((i * 7) % 34)}%` }}
             >
-              <div className="folder__back" />
-              <div className="folder__tab" />
+              {/* Card face */}
+              <span className="drawer__face grain" />
 
-              {/* The sheet doubles as the slot for a future project cover. */}
-              <div className="folder__sheet flex items-center justify-center">
-                <span className="text-[9px] uppercase tracking-brand text-stone/50">
-                  Image
+              {/* Cut tab, staggered down the row like real dividers */}
+              <span className="drawer__tab grain" />
+
+              {/* Vertical label on the tab */}
+              <span className="drawer__label">
+                <span className="text-[10px] uppercase tracking-wide2 text-ink/45">
+                  {String(i + 1).padStart(3, "0")} //
                 </span>
-              </div>
-
-              <div className="folder__front" />
-
-              {/* Index card on the tab — reads as a filing label. */}
-              <span className="pointer-events-none absolute left-4 top-[0.62rem] z-10 text-[8px] uppercase tracking-wide2 text-ink/55">
-                {p.year}
+                <span className="ml-2 text-[11px] font-medium uppercase tracking-wide2 text-ink/85">
+                  {p.title}
+                </span>
               </span>
 
-              <div className="folder__label text-center">
-                <h3 className="font-display text-xl font-light text-bone">
-                  {p.title}
-                </h3>
-                <p className="mt-1 text-[9px] uppercase tracking-wide2 text-ember">
+              {/* Footer detail, only legible once the drawer widens */}
+              <span className="drawer__meta">
+                <span className="block text-[9px] uppercase tracking-wide2 text-ink/40">
                   {p.category}
-                </p>
-              </div>
-            </article>
+                </span>
+                <span className="mt-1 block text-[9px] uppercase tracking-wide2 text-ink/30">
+                  {p.renders} Renders · {p.year}
+                </span>
+              </span>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* ------------------------------------------------ scatter overlay -- */}
+      {active && open !== null && (
+        <div
+          ref={overlayRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${active.title} renders`}
+          onClick={() => setOpen(null)}
+          className="fixed inset-0 z-50 cursor-zoom-out bg-ink/70 backdrop-blur-2xl"
+        >
+          {/* Heading sits above the plates but must not swallow the click */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[100] flex items-start justify-between px-6 py-6 md:px-10 md:py-8">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide2 text-bone/50">
+                {active.category} · {active.year}
+              </p>
+              <h3 className="mt-2 font-display text-3xl font-light text-bone md:text-5xl">
+                {active.title}
+              </h3>
+            </div>
+            <span className="text-[10px] uppercase tracking-wide2 text-bone/50">
+              Click anywhere to close
+            </span>
+          </div>
+
+          {scatter(open, active.renders).map((pl, i) => (
+            <figure
+              key={i}
+              data-plate
+              className="absolute rounded-[3px] bg-sheet shadow-[0_24px_60px_-24px_rgba(0,0,0,0.75)] ring-1 ring-inset ring-black/5"
+              style={{
+                left: `${pl.x}%`,
+                top: `${pl.y}%`,
+                width: `${pl.w}vw`,
+                zIndex: pl.z,
+                transform: `translate(-50%, -50%) rotate(${pl.rotate}deg)`,
+                aspectRatio:
+                  pl.ratio === "landscape"
+                    ? "4 / 3"
+                    : pl.ratio === "portrait"
+                      ? "3 / 4"
+                      : "1 / 1",
+              }}
+            >
+              <span className="grain absolute inset-0 rounded-[3px]" />
+            </figure>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

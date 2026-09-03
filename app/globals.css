@@ -13,13 +13,13 @@
 }
 
 html {
-  background: #131313;
+  background: #1D1D1B;
 }
 
 body {
   margin: 0;
-  background: #131313;
-  color: #F2F0EA;
+  background: #1D1D1B;
+  color: #FFFFF7;
   font-family: var(--font-sans);
   overflow-x: hidden;
 }
@@ -37,143 +37,158 @@ html.lenis body {
 }
 
 ::selection {
-  background: #DCF264;
-  color: #131313;
+  background: #E7E7DD;
+  color: #1D1D1B;
 }
 
-/* ---------------------------------------------------------------- folders --
-   A project tile built as a physical manila folder: a tab, a sheet of paper
-   sitting inside it, and a front cover that overlaps both. Pure CSS — no
-   images — so it recolours with the palette and stays crisp at any size.
+/* ------------------------------------------------------------------ grain --
+   Subtle paper tooth, generated rather than loaded: an SVG turbulence filter
+   as a data URI, so there is no extra request and it scales cleanly.
+
+   Two variants, because one blend mode cannot serve both ends of the
+   palette. `multiply` only ever darkens, so on the near-black ground it has
+   nothing to darken toward and the texture disappears — it is used on the
+   light (White Sand / White) surfaces, where it reads as fine paper tooth.
+   `screen` only ever lightens, which is what grain-on-black actually looks
+   like: faint light flecks catching the dark surface, never darker-than-
+   black blotches. Both apply the SAME noise map, just recoloured per surface
+   and re-blended for the ground it sits on.
+
+   PLACEHOLDER for the texture being sourced — swap the background-image for
+   the real file and keep the opacity/blend as the starting point.
    -------------------------------------------------------------------------- */
-
-.folder {
+.grain {
   position: relative;
-  width: 17rem;
-  height: 12.5rem;
-  flex: none;
+  background-color: #e7e7dd;
 }
-
-/* Back panel + tab. The tab is a separate box so its corner can be rounded
-   independently of the body, the way a real cut tab looks. */
-.folder__back {
-  position: absolute;
-  inset: 1.25rem 0 0 0;
-  background: var(--folder-deep, #b8b6ae);
-  border-radius: 0.35rem 0.5rem 0.5rem 0.5rem;
-}
-.folder__tab {
-  position: absolute;
-  top: 0.55rem;
-  left: 0;
-  width: 44%;
-  height: 0.9rem;
-  background: var(--folder-deep, #b8b6ae);
-  border-radius: 0.35rem 0.6rem 0 0;
-}
-
-/* The sheet inside — rises on hover so the folder reads as opening. */
-.folder__sheet {
-  position: absolute;
-  inset: 2.1rem 0.65rem 0.7rem 0.65rem;
-  background: var(--folder-sheet, #f2f0ea);
-  border-radius: 0.2rem;
-  transform: translateY(0);
-  transition:
-    transform 220ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 220ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* Front cover, slightly lighter than the back so the fold reads. */
-.folder__front {
-  position: absolute;
-  inset: 2.6rem 0 0 0;
-  background: var(--folder-face, #d9d7d0);
-  border-radius: 0.5rem 0.5rem 0.45rem 0.45rem;
-  transform-origin: bottom center;
-  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* A single light sweep across the cover on hover — the Glare Hover idea,
-   done with a gradient rather than a library. */
-.folder__front::after {
+.grain::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.35) 50%,
-    transparent 65%
-  );
-  background-size: 220% 100%;
-  background-position: 140% 0;
-  opacity: 0;
-  transition:
-    background-position 520ms cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 180ms ease;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Dark ground variant — apply alongside bg-ink wherever the page shows black. */
+.grain-dark {
+  position: relative;
+}
+.grain-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* ---------------------------------------------------------------- drawers --
+   Nine dividers standing edge to edge. Hovering one takes width from the rest
+   via flex-grow, which is why the row is a flex container with no fixed widths:
+   the neighbours give way rather than the hovered card overlapping them.
+   -------------------------------------------------------------------------- */
+.drawer-rail {
+  /* Cards are pushed apart by the gap alone; the dark ground shows through as
+     the seam between them. */
+  align-items: stretch;
+}
+
+.drawer {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: none;
+  text-align: left;
+  transition: flex-grow 420ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .folder:hover .folder__sheet {
-    transform: translateY(-1.15rem);
-    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.65);
-  }
-  .folder:hover .folder__front {
-    transform: rotateX(11deg) translateY(2px);
-  }
-  .folder:hover .folder__front::after {
-    opacity: 1;
-    background-position: -40% 0;
-  }
-  .folder:hover .folder__label {
-    opacity: 1;
-    transform: translateY(0);
+  .drawer:hover {
+    flex-grow: 3.2;
   }
 }
+/* Keyboard parity — tabbing through opens the same way hovering does. */
+.drawer:focus-visible {
+  flex-grow: 3.2;
+  outline: none;
+}
 
-.folder__label {
+/**
+ * The face stops short of the right edge, leaving a strip of dark ground
+ * exposed. The tab then fills that strip for one vertical band only, so the
+ * panel's own silhouette steps outward at the tab — the stepped edge the
+ * reference has.
+ *
+ * The tab deliberately does NOT overhang into the neighbour: siblings paint in
+ * DOM order, so an overhanging tab is covered by the next panel's face and
+ * never appears at all.
+ */
+.drawer__face {
   position: absolute;
-  left: 0;
+  inset: 0 var(--tab-w, 11px) 0 0;
+  border-radius: 2px 0 0 3px;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.05);
+}
+
+.drawer__tab {
+  position: absolute;
+  top: var(--tab-top, 10%);
   right: 0;
-  bottom: -2.6rem;
+  width: var(--tab-w, 11px);
+  height: 24%;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.35);
+}
+
+.drawer__label {
+  position: absolute;
+  top: var(--tab-top, 10%);
+  /* Centred on the face, not the whole panel, so the reserved tab strip
+     doesn't push the text off-axis. */
+  left: calc(50% - var(--tab-w, 11px) / 2);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  /* Reads bottom-to-top, as a spine label does. */
+  writing-mode: vertical-rl;
+  transform: translateX(-50%) rotate(180deg);
+  transform-origin: center;
+}
+
+.drawer__meta {
+  position: absolute;
+  bottom: 1.25rem;
+  left: calc(50% - var(--tab-w, 11px) / 2);
+  transform: translateX(-50%);
+  width: max-content;
   opacity: 0;
-  transform: translateY(6px);
-  transition:
-    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: opacity 260ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Keyboard users get the same reveal as pointer users. */
-.folder:focus-visible .folder__label,
-.folder:focus-within .folder__label {
+@media (hover: hover) and (pointer: fine) {
+  .drawer:hover .drawer__meta {
+    opacity: 1;
+  }
+}
+.drawer:focus-visible .drawer__meta {
   opacity: 1;
-  transform: translateY(0);
 }
 
-/* The rail keeps a 3D context so the cover's rotateX reads as a real fold. */
-.folder-rail {
-  perspective: 900px;
-}
-
-/* Edge fades so the rail reads as continuing past the viewport rather than
-   being cut off — Unlumen's Horizontal Depth Fade, as a mask. */
-.folder-rail-mask {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 5rem,
-    #000 calc(100% - 5rem),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 5rem,
-    #000 calc(100% - 5rem),
-    transparent 100%
-  );
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer__meta {
+    transition: none;
+  }
 }
 
 /* ---------------------------------------------------------------- marquee --
@@ -217,20 +232,6 @@ html.lenis body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .folder__sheet,
-  .folder__front,
-  .folder__front::after {
-    transition: none;
-  }
-  .folder:hover .folder__front {
-    transform: none;
-  }
-  .folder:hover .folder__sheet {
-    transform: translateY(-0.4rem);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

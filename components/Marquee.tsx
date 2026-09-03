@@ -39,7 +39,7 @@ export default function Marquee() {
   return (
     <section
       aria-label="Capabilities"
-      className="marquee overflow-hidden border-y border-bone/10 bg-ink py-7 md:py-9"
+      className="marquee grain-dark overflow-hidden border-y border-bone/10 bg-ink py-7 md:py-9"
     >
       <div className="marquee__track flex w-max">
         <Row />

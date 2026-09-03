@@ -21,6 +21,17 @@ gsap.registerPlugin(ScrollTrigger);
 
 const FRAME_END = 0.72;
 
+/**
+ * How many frames must decode before the hero is shown.
+ *
+ * This used to wait for all 120 (~9MB), which held a loading counter on screen
+ * for ~26 seconds on a cold cache — long enough to be indistinguishable from a
+ * broken page. Only the opening frames are needed to paint frame 0; the rest
+ * stream in while the visitor is reading the hero, and draw() already falls
+ * back to the nearest decoded neighbour if scrolling outruns the download.
+ */
+const FRAMES_BEFORE_READY = 12;
+
 export default function CinematicScroll() {
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -45,7 +56,7 @@ export default function CinematicScroll() {
         if (cancelled) return;
         loaded++;
         setProgress(loaded / sequence.frameCount);
-        if (loaded === sequence.frameCount) setReady(true);
+        if (loaded >= FRAMES_BEFORE_READY) setReady(true);
       };
       images[i] = img;
     }
@@ -99,7 +110,7 @@ export default function CinematicScroll() {
       const w = img.naturalWidth * scale;
       const h = img.naturalHeight * scale;
 
-      ctx.fillStyle = "#131313";
+      ctx.fillStyle = "#1D1D1B";
       ctx.fillRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     };
@@ -362,7 +373,7 @@ export default function CinematicScroll() {
     <div ref={rootRef} className="relative h-[700vh]">
       {/* Loading veil */}
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-ink transition-opacity duration-1000"
+        className="grain-dark fixed inset-0 z-50 flex items-center justify-center bg-ink transition-opacity duration-1000"
         style={{
           opacity: ready ? 0 : 1,
           pointerEvents: ready ? "none" : "auto",

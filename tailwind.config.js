@@ -26,18 +26,35 @@ module.exports = {
        * into the same neutral family so the Projects rail stops reading warm
        * against a cold palette.
        */
+      /**
+       * Exactly three colors on the whole page — Pantone Black C, a warm
+       * off-white ("White Sand"), and a cooler near-white. Every other token
+       * below is an alias onto one of these three, kept only so existing
+       * markup (bone/stone/acid/manila/sheet...) still resolves without
+       * touching every component; none of them introduces a fourth hue.
+       *
+       * Role split: black is the ground and the only text color on light
+       * surfaces; white is primary text on dark; white-sand is secondary/
+       * muted text on dark AND the paper color for light surfaces (drawer
+       * faces, scatter plates) — so it does double duty rather than needing
+       * its own near-white shade.
+       */
       colors: {
-        bone: "#F2F0EA",
-        clay: "#D9D7D0",
-        ink: "#131313",
-        stone: "#7A7A75",
-        acid: "#DCF264",
-        // Kept as aliases so existing markup that references them still
-        // resolves; both now sit in the neutral family.
-        ember: "#DCF264",
-        manila: "#D9D7D0",
-        manilaDeep: "#B8B6AE",
-        sheet: "#F2F0EA",
+        black3: "#1D1D1B",
+        whiteSand: "#E7E7DD",
+        white3: "#FFFFF7",
+
+        ink: "#1D1D1B", // ground + text-on-light
+        bone: "#FFFFF7", // primary text on dark
+        stone: "#E7E7DD", // secondary text on dark
+        clay: "#E7E7DD",
+        // No accent color remains — both resolve to the muted third tone
+        // rather than a fourth hue.
+        acid: "#E7E7DD",
+        ember: "#E7E7DD",
+        manila: "#E7E7DD", // paper surfaces (drawer face/tab)
+        manilaDeep: "#E7E7DD",
+        sheet: "#FFFFF7", // scatter plates — the brighter of the two lights
       },
       fontFamily: {
         display: ["var(--font-display)", "Helvetica Neue", "Arial", "sans-serif"],
