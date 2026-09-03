@@ -191,14 +191,21 @@ export default function CinematicScroll() {
            * bottom-up clip wipe while the smaller supporting lines carry the
            * actual travel. That difference in treatment is what separates an
            * editorial reveal from a uniform fade-up of the whole block.
+           *
+           * `x` is new: services enter from the side they're anchored to
+           * (left services drift in from -30px, right from +30px) instead of
+           * rising from below, so the alternating placement reads as lateral
+           * movement rather than the same vertical entrance repeated on
+           * alternating sides of the screen.
            */
-          const arm = (b: string) => {
+          const arm = (b: string, x = 0) => {
             gsap.set(display(b), {
               opacity: 0,
               y: 6,
+              x,
               clipPath: "inset(100% 0% 0% 0%)",
             });
-            gsap.set(plain(b), { opacity: 0, y: 14 });
+            gsap.set(plain(b), { opacity: 0, y: 14, x });
           };
 
           /**
@@ -214,8 +221,16 @@ export default function CinematicScroll() {
            */
           const timelines: { tl: gsap.core.Timeline; start: number; end: number }[] = [];
 
-          const beat = (b: string, start: number, end: number) => {
-            arm(b);
+          /**
+           * `x` drives the lateral entrance for alternating service placement;
+           * every other beat omits it and gets the original vertical-only
+           * treatment. Exit continues a few px further in the same horizontal
+           * direction it entered from (not back toward centre), so a
+           * left-placed beat keeps drifting left as it fades — reinforcing
+           * which side it belongs to rather than snapping back through centre.
+           */
+          const beat = (b: string, start: number, end: number, x = 0) => {
+            arm(b, x);
 
             const tl = gsap.timeline({ paused: true });
             timelines.push({ tl, start, end });
@@ -223,6 +238,7 @@ export default function CinematicScroll() {
             tl.to(display(b), {
               opacity: 1,
               y: 0,
+              x: 0,
               clipPath: "inset(0% 0% 0% 0%)",
               duration: 1,
               ease: "power4.out",
@@ -232,6 +248,7 @@ export default function CinematicScroll() {
                 {
                   opacity: 1,
                   y: 0,
+                  x: 0,
                   duration: 0.9,
                   ease: "power4.out",
                   stagger: 0.12,
@@ -239,11 +256,13 @@ export default function CinematicScroll() {
                 0.08
               )
               .to(lines(b), { opacity: 1, duration: 1.3 })
-              // Leaves the way the camera is travelling — upward and past.
-              // Shorter travel out than in, so it clears without lurching.
+              // Leaves the way the camera is travelling — upward and past,
+              // plus a small continuation of x for services (0 for everything
+              // else, so this is a no-op there).
               .to(lines(b), {
                 opacity: 0,
                 y: -12,
+                x: x === 0 ? 0 : x > 0 ? 14 : -14,
                 duration: 0.9,
                 ease: "power2.out",
                 stagger: 0.06,
@@ -251,19 +270,19 @@ export default function CinematicScroll() {
           };
 
           /**
-           * The hero is the exception: it must be legible the moment the
-           * loader clears, so it arrives on a real (time-based) timeline
-           * rather than waiting for scroll. Its scroll trigger is created
-           * afterwards and only handles the exit.
+           * The brand moment (wordmark + eyebrow) is the exception: it must
+           * be legible the instant the loader clears, so it arrives on a real
+           * (time-based) timeline rather than waiting for scroll. Its scroll
+           * trigger is created afterwards and only handles the exit — every
+           * other moment, including the tagline right after it, is a normal
+           * scroll-driven beat().
            */
-          arm("hero");
+          arm("brand");
 
-          // Hero exit only — progress 0 is the fully-arrived state left by the
-          // entrance below, so the controller can drive it like any other beat.
-          const heroExit = gsap.timeline({ paused: true });
-          heroExit
-            .to(lines("hero"), { opacity: 1, duration: 1.2 })
-            .to(lines("hero"), {
+          const brandExit = gsap.timeline({ paused: true });
+          brandExit
+            .to(lines("brand"), { opacity: 1, duration: 1.2 })
+            .to(lines("brand"), {
               opacity: 0,
               y: -12,
               duration: 1,
@@ -274,10 +293,10 @@ export default function CinematicScroll() {
           gsap
             .timeline({
               onComplete: () => {
-                timelines.push({ tl: heroExit, start: 0, end: 0.2 });
+                timelines.push({ tl: brandExit, start: 0, end: 0.06 });
               },
             })
-            .to(display("hero"), {
+            .to(display("brand"), {
               opacity: 1,
               y: 0,
               clipPath: "inset(0% 0% 0% 0%)",
@@ -285,7 +304,7 @@ export default function CinematicScroll() {
               ease: "power4.out",
             })
             .to(
-              plain("hero"),
+              plain("brand"),
               {
                 opacity: 1,
                 y: 0,
@@ -296,12 +315,28 @@ export default function CinematicScroll() {
               0.15
             );
 
-          beat("reveal", 0.2, 0.42);
-          beat("interior", 0.44, 0.62);
+          /**
+           * Opening sequence: brand (above) -> tagline -> purpose, each its
+           * own moment rather than one stacked block. Only the tagline stays
+           * centred with the brand mark — purpose and everything after moves
+           * to the left third, which is the default this whole sequence
+           * otherwise follows.
+           */
+          beat("tagline", 0.06, 0.13);
+          beat("purpose", 0.13, 0.2);
 
+          beat("reveal", 0.2, 0.4);
+          beat("interior", 0.42, 0.6);
+
+          /**
+           * Services alternate left/right by index parity — even indices sit
+           * left third, odd sit right third — entering with the matching
+           * lateral motion above (-30 for left, +30 for right).
+           */
+          const serviceSpan = 0.3 / site.services.length;
           site.services.forEach((_, i) => {
-            const span = 0.36 / site.services.length;
-            beat(`service-${i}`, 0.62 + i * span, 0.62 + (i + 1) * span);
+            const start = 0.62 + i * serviceSpan;
+            beat(`service-${i}`, start, start + serviceSpan, i % 2 === 0 ? -30 : 30);
           });
 
           /**
@@ -330,13 +365,14 @@ export default function CinematicScroll() {
     /* ---- Reduced motion ------------------------------------------------
      * Fewer and gentler, not none: the beats still need to swap or they'd
      * stack on top of each other, so opacity is kept and every transform
-     * and clip reveal is dropped.
+     * and clip reveal is dropped — including the services' horizontal
+     * entrance, which is motion the same way the vertical entrance is.
      */
     mm.add({ motion: "(prefers-reduced-motion: reduce)" }, () => {
       const ctx = gsap.context(() => {
         const fade = (b: string, start: number, end: number, lead = false) => {
           const sel = `[data-beat='${b}'] [data-anim]`;
-          gsap.set(sel, { opacity: lead ? 1 : 0, y: 0, clipPath: "none" });
+          gsap.set(sel, { opacity: lead ? 1 : 0, y: 0, x: 0, clipPath: "none" });
 
           const tl = gsap.timeline({
             scrollTrigger: {
@@ -354,12 +390,16 @@ export default function CinematicScroll() {
           });
         };
 
-        fade("hero", 0, 0.2, true);
-        fade("reveal", 0.2, 0.42);
-        fade("interior", 0.44, 0.62);
+        fade("brand", 0, 0.06, true);
+        fade("tagline", 0.06, 0.13);
+        fade("purpose", 0.13, 0.2);
+        fade("reveal", 0.2, 0.4);
+        fade("interior", 0.42, 0.6);
+
+        const serviceSpan = 0.3 / site.services.length;
         site.services.forEach((_, i) => {
-          const span = 0.36 / site.services.length;
-          fade(`service-${i}`, 0.62 + i * span, 0.62 + (i + 1) * span);
+          const start = 0.62 + i * serviceSpan;
+          fade(`service-${i}`, start, start + serviceSpan);
         });
       }, rootRef);
 
@@ -404,9 +444,14 @@ export default function CinematicScroll() {
         */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white3/40 via-transparent to-white3/50" />
 
-        {/* ---- Beat 1: hero ---- */}
+        {/*
+          ---- Moment 1: brand ----
+          The one deliberately centred title-card moment — a brand-mark
+          reveal earns it the way the tagline right after earns its own
+          exception. Everything from here on defaults to the left third.
+        */}
         <div
-          data-beat="hero"
+          data-beat="brand"
           className="pointer-events-none absolute inset-0 flex w-full flex-col items-center justify-center overflow-hidden px-6 text-center"
         >
           <p
@@ -422,6 +467,10 @@ export default function CinematicScroll() {
             and drags the whole centred stack off-axis with it.
             The trailing -mr offsets the space after the final letter so the
             word sits optically centred rather than pulled left.
+
+            This is the ONLY text on the page allowed at this scale — every
+            other headline-tier element (tagline, service titles) sits well
+            below it, so the wordmark stays the singular large moment.
           */}
           <h1
             data-anim="display"
@@ -429,15 +478,9 @@ export default function CinematicScroll() {
           >
             {site.beats.hero.title}
           </h1>
-          <p
-            data-anim
-            className="mt-8 font-display text-2xl font-light italic text-ink/85 md:text-4xl"
-          >
-            {site.beats.hero.subtitle}
-          </p>
           <div
             data-anim
-            className="mt-10 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
+            className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-wide2 text-ink/55"
           >
             {site.positioning.map((p, i) => (
               <span key={p} className="flex items-center gap-3">
@@ -448,62 +491,111 @@ export default function CinematicScroll() {
           </div>
         </div>
 
-        {/* ---- Beat 2: the reveal ---- */}
+        {/*
+          ---- Moment 2: tagline ----
+          Still centred (the brief's explicit exception for "the major
+          conceptual tagline"), but its own moment rather than sharing the
+          brand mark's block — it gets to breathe instead of being squeezed
+          underneath VIZKRAFT.
+        */}
         <div
-          data-beat="reveal"
-          className="pointer-events-none absolute inset-0 flex items-end justify-center px-6 pb-[18vh]"
+          data-beat="tagline"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center"
         >
           <p
             data-anim="display"
-            className="max-w-2xl text-center font-display text-3xl font-light leading-snug text-ink md:text-5xl"
+            className="max-w-2xl font-display text-2xl font-light italic leading-snug text-ink md:text-4xl"
+          >
+            {site.beats.hero.subtitle}
+          </p>
+        </div>
+
+        {/*
+          ---- Moment 3: purpose ----
+          First left-third moment. A sentence, not a headline — restrained
+          on purpose so it supports the architecture rather than competing
+          with it, and positioned clear of the render's centre-right subject
+          matter (the model/building itself) rather than over it.
+        */}
+        <div
+          data-beat="purpose"
+          className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
+        >
+          <p
+            data-anim="display"
+            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
+          >
+            {site.beats.purpose.line}
+          </p>
+        </div>
+
+        {/* ---- Moment 4: the reveal — left third, same restrained tier as purpose ---- */}
+        <div
+          data-beat="reveal"
+          className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
+        >
+          <p
+            data-anim="display"
+            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
           >
             {site.beats.reveal.line}
           </p>
         </div>
 
-        {/* ---- Beat 3: into the space ---- */}
+        {/* ---- Moment 5: into the space — same tier, same left third ---- */}
         <div
           data-beat="interior"
-          className="pointer-events-none absolute inset-0 flex items-end justify-center px-6 pb-[18vh]"
+          className="pointer-events-none absolute inset-0 flex items-center justify-start px-6 md:pl-[8vw] md:pr-[14vw]"
         >
           <p
             data-anim="display"
-            className="max-w-3xl text-center font-display text-3xl font-light leading-snug text-ink md:text-5xl"
+            className="max-w-sm text-left font-display text-lg font-light leading-relaxed text-ink md:max-w-md md:text-2xl"
           >
             {site.beats.interior.line}
           </p>
         </div>
 
-        {/* ---- Beats 4+: services ---- */}
-        {site.services.map((s, i) => (
-          <div
-            key={s.index}
-            data-beat={`service-${i}`}
-            className="pointer-events-none absolute inset-0 flex items-center px-8 md:px-[10vw]"
-          >
-            <div className="max-w-xl">
-              <span data-anim className="font-display text-sm text-ink/60">
-                {s.index}
-              </span>
-              <h2
-                data-anim="display"
-                className="mt-3 font-display text-4xl font-light leading-tight text-ink md:text-6xl"
-              >
-                {s.title}
-              </h2>
-              <p
-                data-anim
-                className="mt-5 max-w-md text-sm font-light leading-relaxed text-ink/75 md:text-base"
-              >
-                {s.body}
-              </p>
+        {/*
+          ---- Moments 6+: services, alternating left/right by index ----
+          Titles sit at the tagline's tier (noticeable, not headline-scale);
+          the alternation itself is what creates rhythm here, not size.
+        */}
+        {site.services.map((s, i) => {
+          const isLeft = i % 2 === 0;
+          return (
+            <div
+              key={s.index}
+              data-beat={`service-${i}`}
+              className={`pointer-events-none absolute inset-0 flex items-center px-6 ${
+                isLeft
+                  ? "justify-start md:pl-[8vw] md:pr-[14vw]"
+                  : "justify-end md:pl-[14vw] md:pr-[8vw]"
+              }`}
+            >
+              <div className="max-w-sm text-left md:max-w-md">
+                <span data-anim className="font-display text-sm text-ink/60">
+                  {s.index}
+                </span>
+                <h2
+                  data-anim="display"
+                  className="mt-3 font-display text-2xl font-light leading-tight text-ink md:text-4xl"
+                >
+                  {s.title}
+                </h2>
+                <p
+                  data-anim
+                  className="mt-4 max-w-xs text-sm font-light leading-relaxed text-ink/75 md:text-base"
+                >
+                  {s.body}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
-        {/* Scroll hint — only while the hero beat is on screen */}
+        {/* Scroll hint — only while the brand moment is on screen */}
         <div
-          data-beat="hero"
+          data-beat="brand"
           className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2"
         >
           <span

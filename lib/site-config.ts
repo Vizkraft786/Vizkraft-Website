@@ -30,6 +30,10 @@ export const site = {
       subtitle: "We Visualize Dreams",
       cta: "Start a Project",
     },
+    // Small/medium purpose statement — deliberately not another headline.
+    purpose: {
+      line: "We transform architectural ideas into immersive visual experiences.",
+    },
     reveal: {
       // Appears as the clay model resolves into the laptop screen.
       line: "Every project begins as an idea.",
