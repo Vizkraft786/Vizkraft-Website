@@ -62,8 +62,25 @@ html.lenis body {
    PLACEHOLDER for the texture being sourced — swap the background-image for
    the real file and keep the opacity/blend as the starting point.
    -------------------------------------------------------------------------- */
+/*
+ * No `position` here on purpose — it used to hardcode `relative`, which
+ * silently won the cascade over Tailwind's `fixed`/`absolute` utilities
+ * wherever they were combined on the same element (Tailwind's utility layer
+ * loads near the top of the compiled stylesheet via @tailwind utilities;
+ * this custom class sits further down, so for two same-specificity rules
+ * setting the same property, this one always won). That broke the loading
+ * veil (forced from fixed to relative, so it stopped being removed from
+ * flow and pushed the sticky hero stage down by its own height) and the
+ * scatter-overlay plates (forced from absolute to relative, so they never
+ * actually scattered — they'd have stacked in normal flow instead).
+ * .drawer__face/.drawer__tab happened to survive only because their own
+ * rule for `position: absolute` happens to sit later in this same file,
+ * which is exactly the kind of source-order accident this fix removes
+ * reliance on. Every current usage already carries its own explicit
+ * position utility except Contact/Marquee's sections, which now declare
+ * `relative` directly in their className instead of inheriting it here.
+ */
 .grain {
-  position: relative;
   background-color: #e7e7dd;
 }
 .grain::after {

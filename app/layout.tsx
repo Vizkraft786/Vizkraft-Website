@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site-config";
@@ -46,7 +47,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {/*
+          Must run before the browser's own native scroll restoration does,
+          which is why this is beforeInteractive rather than a useEffect in
+          SmoothScroll — an effect only fires after mount/paint, by which
+          point the browser may already have restored a remembered scroll
+          position and painted one visible frame of it (the exact bug this
+          fixes: the hero loading shifted/cropped until scrolled once).
+          beforeInteractive injects into the initial HTML and runs ahead of
+          hydration, early enough to actually pre-empt that restoration.
+        */}
+        <Script id="scroll-restoration-off" strategy="beforeInteractive">
+          {`try { history.scrollRestoration = "manual"; } catch (e) {}`}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }
