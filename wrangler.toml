@@ -1,0 +1,8 @@
+# Deploys the /out folder (next build's static export) as Workers static
+# assets. Without this, "wrangler deploy" has nothing to publish and the
+# Cloudflare dashboard's Deploy command falls back to a no-op like `echo`.
+name = "vizkraft-website"
+compatibility_date = "2026-09-10"
+
+[assets]
+directory = "./out"
