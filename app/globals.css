@@ -26,6 +26,10 @@ body {
   background: #E7E7DD;
   color: #1D1D1B;
   font-family: var(--font-sans);
+  /* Gotham was supplied as a single Thin cut. Inheriting 100 means elements
+     that specify no weight land on the real face instead of asking for 400
+     and letting the browser fake it. */
+  font-weight: 100;
   overflow-x: hidden;
 }
 
@@ -210,6 +214,51 @@ html.lenis body {
 }
 .drawer:focus-visible .drawer__meta {
   opacity: 1;
+}
+
+/* Phones: the rail becomes a stacked index, one drawer per row.
+   Nine drawers side by side on a 375px screen are 34px each, with 11px labels
+   set vertically and no hover to widen them. Stacked, each is a full-width row
+   with its title set horizontally and its render count always showing. The
+   same object turned through 90°: the tab steps up out of the top edge at the
+   same staggered offset it steps out of the right edge on desktop.
+   The rail's own direction and height switch in Work.tsx (max-md: classes). */
+@media (max-width: 767px) {
+  .drawer {
+    flex: none;
+    height: 4.5rem;
+    transition: none;
+  }
+  .drawer__face {
+    inset: var(--tab-w, 11px) 0 0 0;
+    border-radius: 3px;
+    box-shadow:
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 2px 10px -6px rgba(0, 0, 0, 0.25);
+  }
+  .drawer__tab {
+    top: 0;
+    right: auto;
+    left: var(--tab-top, 10%);
+    width: 24%;
+    height: var(--tab-w, 11px);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -2px 6px -3px rgba(0, 0, 0, 0.25);
+  }
+  .drawer__label {
+    top: calc(50% + var(--tab-w, 11px) / 2);
+    left: 1.25rem;
+    writing-mode: horizontal-tb;
+    transform: translateY(-50%);
+  }
+  .drawer__meta {
+    top: calc(50% + var(--tab-w, 11px) / 2);
+    bottom: auto;
+    left: auto;
+    right: 1.25rem;
+    transform: translateY(-50%);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

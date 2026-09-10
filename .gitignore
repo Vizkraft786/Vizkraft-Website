@@ -33,3 +33,6 @@ yarn-error.log*
 
 # scratch / review artifacts
 /public/__review.*
+
+# local Claude Code tooling — not part of the website
+.claude/

@@ -57,8 +57,14 @@ module.exports = {
         sheet: "#FFFFF7", // scatter plates — the brighter of the two lights
       },
       fontFamily: {
-        display: ["var(--font-display)", "Helvetica Neue", "Arial", "sans-serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // The Seasons, then Gotham. The Seasons only covers the characters
+        // in its unicode-range in layout.tsx; anything else in a
+        // heading — "@", "+", "&", "4" — is drawn by Gotham Thin next in line.
+        // Georgia is the closest widely-installed serif if both fail to load.
+        display: ["var(--font-display)", "var(--font-sans)", "Georgia", "Times New Roman", "serif"],
+        // Gotham Thin. Fallbacks are geometric-ish sans faces so a failure
+        // does not land body copy on a serif.
+        sans: ["var(--font-sans)", "Helvetica Neue", "Arial", "sans-serif"],
       },
       /**
        * Reduced from 0.42em/0.18em to match the font-reference site's label
