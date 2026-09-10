@@ -1,0 +1,21 @@
+# Cloudflare Pages response headers. The build copies this file into /out.
+
+# Build assets are content-hashed: a changed file gets a new name, so a copy
+# can be kept forever.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The film frames are the heaviest thing on the site (~70 MB desktop, ~38 MB
+# phone) and rarely change. A week's cache means a returning visitor does not
+# download them again. Frames replaced under the same names reach returning
+# visitors within the week.
+/frames/*
+  Cache-Control: public, max-age=604800
+/frames-portrait/*
+  Cache-Control: public, max-age=604800
+
+# Renders and portraits are more likely to be swapped, so a day.
+/projects/*
+  Cache-Control: public, max-age=86400
+/team/*
+  Cache-Control: public, max-age=86400
